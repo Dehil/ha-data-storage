@@ -1,0 +1,129 @@
+- trigger:
+    - trigger: event
+      event_type: data_add
+    - trigger: event
+      event_type: data_remove
+    - trigger: event
+      event_type: data_clear
+  sensor:
+    - name: Data Storage
+      unique_id: data_storage
+      state: >
+        {{ as_timestamp(now()) }}
+      attributes:
+        friendly_name: data_storage
+        last_changed: >
+          {{ now().isoformat() }}
+        storage: >
+          {% set current = this.attributes.get('storage') %}
+          {% if current is none %}
+            {% set current = {} %}
+          {% endif %}
+          {% set path = trigger.event.data.path if trigger.event.data.path != none else [] %}
+          {% set value = trigger.event.data.value if trigger.event.data.value != none else {} %}
+          {% if trigger.event.event_type == 'data_add' %}
+            {% if path | length == 1 %}
+              {% set level1 = current.get(path[0], {}) %}
+              {% if level1 is mapping %}
+                {% set new_level1 = dict(level1.items() | list + value.items() | list) %}
+                {{ dict(current.items() | list + [(path[0], new_level1)]) }}
+              {% else %}
+                {{ dict(current.items() | list + [(path[0], value)]) }}
+              {% endif %}
+            {% elif path | length == 2 %}
+              {% set level1 = current.get(path[0], {}) %}
+              {% if not level1 is mapping %}
+                {% set level1 = {} %}
+              {% endif %}
+              {% set level2 = level1.get(path[1], {}) %}
+              {% if level2 is mapping %}
+                {% set new_level2 = dict(level2.items() | list + value.items() | list) %}
+              {% else %}
+                {% set new_level2 = value %}
+              {% endif %}
+              {% set new_level1 = dict(level1.items() | list + [(path[1], new_level2)]) %}
+              {{ dict(current.items() | list + [(path[0], new_level1)]) }}
+            {% elif path | length == 3 %}
+              {% set level1 = current.get(path[0], {}) %}
+              {% if not level1 is mapping %}
+                {% set level1 = {} %}
+              {% endif %}
+              {% set level2 = level1.get(path[1], {}) %}
+              {% if not level2 is mapping %}
+                {% set level2 = {} %}
+              {% endif %}
+              {% set level3 = level2.get(path[2], {}) %}
+              {% if level3 is mapping %}
+                {% set new_level3 = dict(level3.items() | list + value.items() | list) %}
+              {% else %}
+                {% set new_level3 = value %}
+              {% endif %}
+              {% set new_level2 = dict(level2.items() | list + [(path[2], new_level3)]) %}
+              {% set new_level1 = dict(level1.items() | list + [(path[1], new_level2)]) %}
+              {{ dict(current.items() | list + [(path[0], new_level1)]) }}
+            {% else %}
+              {{ current }}
+            {% endif %}
+          {% elif trigger.event.event_type == 'data_remove' %}
+            {% if path | length == 1 %}
+              {% if value is sequence and value is not string %}
+                {% set level1 = current.get(path[0], {}) %}
+                {% if level1 is mapping %}
+                  {% set new_level1 = dict(level1.items() | list | rejectattr(0, 'in', value)) %}
+                  {{ dict(current.items() | list + [(path[0], new_level1)]) }}
+                {% else %}
+                  {{ current }}
+                {% endif %}
+              {% else %}
+                {{ current }}
+              {% endif %}
+            {% elif path | length == 2 %}
+              {% if value is sequence and value is not string %}
+                {% set level1 = current.get(path[0], {}) %}
+                {% if level1 is mapping %}
+                  {% set level2 = level1.get(path[1], {}) %}
+                  {% if level2 is mapping %}
+                    {% set new_level2 = dict(level2.items() | list | rejectattr(0, 'in', value)) %}
+                    {% set new_level1 = dict(level1.items() | list + [(path[1], new_level2)]) %}
+                    {{ dict(current.items() | list + [(path[0], new_level1)]) }}
+                  {% else %}
+                    {{ current }}
+                  {% endif %}
+                {% else %}
+                  {{ current }}
+                {% endif %}
+              {% else %}
+                {{ current }}
+              {% endif %}
+            {% elif path | length == 3 %}
+              {% if value is sequence and value is not string %}
+                {% set level1 = current.get(path[0], {}) %}
+                {% if level1 is mapping %}
+                  {% set level2 = level1.get(path[1], {}) %}
+                  {% if level2 is mapping %}
+                    {% set level3 = level2.get(path[2], {}) %}
+                    {% if level3 is mapping %}
+                      {% set new_level3 = dict(level3.items() | list | rejectattr(0, 'in', value)) %}
+                      {% set new_level2 = dict(level2.items() | list + [(path[2], new_level3)]) %}
+                      {% set new_level1 = dict(level1.items() | list + [(path[1], new_level2)]) %}
+                      {{ dict(current.items() | list + [(path[0], new_level1)]) }}
+                    {% else %}
+                      {{ current }}
+                    {% endif %}
+                  {% else %}
+                    {{ current }}
+                  {% endif %}
+                {% else %}
+                  {{ current }}
+                {% endif %}
+              {% else %}
+                {{ current }}
+              {% endif %}
+            {% else %}
+              {{ current }}
+            {% endif %}
+          {% elif trigger.event.event_type == 'data_clear' %}
+            {}
+          {% else %}
+            {{ current }}
+          {% endif %}

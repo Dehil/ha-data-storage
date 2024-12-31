@@ -1,0 +1,105 @@
+alias: Automation - Data Storage Testing
+description: Sensor Template - Testing to add, remove and clear data
+triggers: []
+conditions: []
+actions:
+  - alias: Add data
+    event: data_add
+    event_data:
+      path:
+        - john_doe
+      value:
+        pre_name: John
+        last_name: Doe
+        age: 30
+        address:
+          shipping_address:
+            street_address: Some Shipping Street
+            city: Some Shipping City
+  - alias: Add item_01 to item_list
+    event: data_add
+    event_data:
+      path:
+        - item_list
+      value:
+        item_01:
+          item_id: 213412512
+          item_name: First Item
+          item_value: 12.99
+  - alias: Add item_01 - item_06
+    event: data_add
+    event_data:
+      path:
+        - item_list
+      value:
+        item_01:
+          item_id: 213412512
+          item_name: First Item
+          item_value: 12.99
+        item_02:
+          item_id: 152436712
+          item_name: Second item
+          item_value: 8.99
+        item_03:
+          item_id: 123516235
+          item_name: Third item
+          item_value: 4.99
+        item_04:
+          item_id: 132361134
+          item_name: Fourth item
+          item_value: 21.99
+        item_05:
+          item_id: 123516532
+          item_name: Fourth item
+          item_value: 6.99
+        item_06:
+          item_id: 123516532
+          item_name: Fourth item
+          item_value: 6.99
+  - alias: Remove item_03 and item_04
+    event: data_remove
+    event_data:
+      path:
+        - item_list
+      value:
+        - item_03
+        - item_04
+  - alias: Update item_05 and item_06
+    event: data_add
+    event_data:
+      path:
+        - item_list
+      value:
+        item_05:
+          item_id: 123516532
+          item_name: Item 5
+          item_value: 25.99
+        item_06:
+          item_id: 132316235
+          item_name: Item 6
+          item_value: 16.99
+  - alias: Add light entities and state for lights in livingroom
+    event: data_add
+    event_data:
+      path:
+        - livingroom
+        - light
+      value:
+        light.ceiling_light: "on"
+        light.floor_light: "on"
+        light.left_wall_light: "off"
+        light.middle_wall_light: "on"
+        light.right_wall_light: "off"
+  - alias: Remove light entities in livingroom
+    event: data_remove
+    event_data:
+      path:
+        - livingroom
+        - light
+      value:
+        - light.left_wall_light
+        - light.right_wall_light
+  - alias: Clearing all data
+    event: data_clear
+    event_data: {}
+mode: single

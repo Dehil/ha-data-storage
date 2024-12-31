@@ -1,0 +1,33 @@
+friendly_name: Data Storage
+last_changed: "2024-12-31T16:05:16.826369+01:00"
+storage:
+  john_doe:
+    pre_name: John
+    last_name: Doe
+    age: 30
+    address:
+      shipping_address:
+        street_address: Some Shipping Street
+        city: Some Shipping City
+  item_list:
+    item_01:
+      item_id: 213412512
+      item_name: First Item
+      item_value: 12.99
+    item_02:
+      item_id: 152436712
+      item_name: Second item
+      item_value: 8.99
+    item_05:
+      item_id: 123516532
+      item_name: Item 5
+      item_value: 25.99
+    item_06:
+      item_id: 132316235
+      item_name: Item 6
+      item_value: 16.99
+  livingroom:
+    light:
+      light.ceiling_light: "on"
+      light.floor_light: "on"
+      light.middle_wall_light: "on"
