@@ -19,8 +19,16 @@
           {% if current is none %}
             {% set current = {} %}
           {% endif %}
-          {% set path = trigger.event.data.path if trigger.event.data.path != none else [] %}
-          {% set value = trigger.event.data.value if trigger.event.data.value != none else {} %}
+          {% if trigger.event.data is not none and trigger.event.data.path is defined %}
+            {% set path = trigger.event.data.path %}
+          {% else %}
+            {% set path = [] %}
+          {% endif %}
+          {% if trigger.event.data is not none and trigger.event.data.value is defined %}
+            {% set value = trigger.event.data.value %}
+          {% else %}
+            {% set value = {} %}
+          {% endif %}
           {% if trigger.event.event_type == 'data_add' %}
             {% if path | length == 1 %}
               {% set level1 = current.get(path[0], {}) %}
@@ -66,7 +74,7 @@
             {% endif %}
           {% elif trigger.event.event_type == 'data_remove' %}
             {% if path | length == 1 %}
-              {% if value is sequence and value is not string %}
+              {% if trigger.event.data.value is defined and value is sequence and value is not string %}
                 {% set level1 = current.get(path[0], {}) %}
                 {% if level1 is mapping %}
                   {% set new_level1 = dict(level1.items() | list | rejectattr(0, 'in', value)) %}
@@ -75,10 +83,10 @@
                   {{ current }}
                 {% endif %}
               {% else %}
-                {{ current }}
+                {{ dict(current.items() | list | rejectattr(0, 'eq', path[0])) }}
               {% endif %}
             {% elif path | length == 2 %}
-              {% if value is sequence and value is not string %}
+              {% if trigger.event.data.value is defined and value is sequence and value is not string %}
                 {% set level1 = current.get(path[0], {}) %}
                 {% if level1 is mapping %}
                   {% set level2 = level1.get(path[1], {}) %}
@@ -93,10 +101,16 @@
                   {{ current }}
                 {% endif %}
               {% else %}
-                {{ current }}
+                {% set level1 = current.get(path[0], {}) %}
+                {% if level1 is mapping %}
+                  {% set new_level1 = dict(level1.items() | list | rejectattr(0, 'eq', path[1])) %}
+                  {{ dict(current.items() | list + [(path[0], new_level1)]) }}
+                {% else %}
+                  {{ current }}
+                {% endif %}
               {% endif %}
             {% elif path | length == 3 %}
-              {% if value is sequence and value is not string %}
+              {% if trigger.event.data.value is defined and value is sequence and value is not string %}
                 {% set level1 = current.get(path[0], {}) %}
                 {% if level1 is mapping %}
                   {% set level2 = level1.get(path[1], {}) %}
@@ -117,7 +131,19 @@
                   {{ current }}
                 {% endif %}
               {% else %}
-                {{ current }}
+                {% set level1 = current.get(path[0], {}) %}
+                {% if level1 is mapping %}
+                  {% set level2 = level1.get(path[1], {}) %}
+                  {% if level2 is mapping %}
+                    {% set new_level2 = dict(level2.items() | list | rejectattr(0, 'eq', path[2])) %}
+                    {% set new_level1 = dict(level1.items() | list + [(path[1], new_level2)]) %}
+                    {{ dict(current.items() | list + [(path[0], new_level1)]) }}
+                  {% else %}
+                    {{ current }}
+                  {% endif %}
+                {% else %}
+                  {{ current }}
+                {% endif %}
               {% endif %}
             {% else %}
               {{ current }}
