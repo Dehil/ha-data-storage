@@ -9,11 +9,10 @@
     - name: Data Storage
       unique_id: data_storage
       state: >
-        {{ as_timestamp(now()) }}
+        {{ 'ready' if this.attributes.get('storage') != none else 'unavailable' }}
       attributes:
         friendly_name: data_storage
-        last_changed: >
-          {{ now().isoformat() }}
+        last_changed: "{{now().isoformat()}}"
         storage: >
           {% set current = this.attributes.get('storage') %}
           {% if current is none %}
@@ -152,4 +151,20 @@
             {}
           {% else %}
             {{ current }}
+          {% endif %}
+        storage_size: >
+          {% set store = this.attributes.get('storage', {}) %}
+          {% set size = store | to_json | length %}
+          {{ (size / 1024) | round(2) }}
+        storage_health: >
+          {% set store = this.attributes.get('storage', {}) %}
+          {% set size = store | to_json | length %}
+          {{ 'warning' if size > 512 * 1024 else 'good' }}
+        storage_last_modified: >
+          {% set prev_state = states.sensor.data_storage.attributes.storage %}
+          {% set curr_state = this.attributes.get('storage', {}) %}
+          {% if prev_state != curr_state %}
+            {{ now().isoformat() }}
+          {% else %}
+            {{ states.sensor.data_storage.attributes.storage_last_modified }}
           {% endif %}

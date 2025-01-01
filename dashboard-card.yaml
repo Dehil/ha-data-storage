@@ -1,0 +1,34 @@
+- type: heading
+  heading: Data Storage Sensor
+  heading_style: title
+  icon: mdi:database
+- type: vertical-stack
+  cards:
+    - square: false
+      type: grid
+      columns: 1
+      cards:
+        - type: entity
+          entity: sensor.data_storage
+          state_color: false
+          name: Storage State
+        - type: entity
+          entity: sensor.data_storage
+          attribute: storage_size
+          unit: KB
+          name: Storage Size
+          icon: mdi:database-refresh
+        - type: entity
+          entity: sensor.data_storage
+          attribute: storage_health
+          name: Storage Health
+          icon: mdi:heart-pulse
+    - type: history-graph
+      entities:
+        - entity: sensor.data_storage
+      logarithmic_scale: false
+      title: Storage History
+      hours_to_show: 12
+  grid_options:
+    columns: 12
+    rows: auto
